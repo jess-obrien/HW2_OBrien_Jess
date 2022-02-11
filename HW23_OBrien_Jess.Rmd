@@ -1,0 +1,64 @@
+---
+title: "STAA 566 Homework 2"
+author: "Jessica O'Brien"
+date: "2/10/2022"
+output: html_document
+knit: (function(input_file, encoding){
+  out_dir <- 'docs'; 
+  rmarkdown::render(input_file,
+  encoding=encoding,
+  output_file=file.path(dirname(input_file), out_dir, 'index.html'))})
+---
+Data Source: https://www.epa.gov/outdoor-air-quality-data/download-daily-data (use filters to pull Ozone levels from Michigan during 2020)
+
+The EPA and CDC monitor pollutants in the air to develop air quality metrics. This data set monitors the Ozone levels in Michigan during 2020. I was interested to see the differences in Ozone levels throughout the year, and how they differed amongst rural and urban counties.I chose Wayne (which includes Detroit) and Ingham (which includes Lansing) counties as the urban counties and Benzie (upper LP) and Schoolcraft (UP) counties as the rural counties. Benzie county, which is on the shore of Lake Michigan, sometimes experiences high ozone levels despite being a relatively rural county due to wind patterns that bring air pollution over from Chicago. Here's an article about this phenomenon if anyone is interested:
+https://www.record-eagle.com/news/local_news/chicago-pollution-makes-landfall-in-benzie-shoreline-counties/article_7aa90869-cc8f-5c53-b872-43f398b4f8af.html
+
+I used a plotly graph with a rangeslider so I could zoom in on specific date ranges. For example, pinpointing the summer peak for Benzie counties shows that the ozone was very close to the danger zone of 0.1 ppm on June 19th. Including different colored lines for each county allows for the comparison between them, while hovering over a point gives the exact ozone concentration value for each county on that date (x-value). Double-clicking one of the counties on the legend will cause the graph to display only that county, making it easier to examine it more closely without noise from the other three counties. 
+
+```{r}
+df<-read.csv('Michigan Ozone Levels 2020.csv') #Read in data from CSV
+```
+
+```{r}
+unique(df$COUNTY) #Check data to see which counties are available
+```
+
+
+```{r}
+library(dplyr)
+mi<-df %>% filter (COUNTY %in% c("Wayne", "Ingham", "Benzie", "Schoolcraft")) #%>% arrange(dates) #Filter data to only the four desired counties and sort by the date the measurement was taken
+dates<-as.Date(mi$Date, "%m/%d/%Y")
+
+```
+
+```{r}
+#install.packages("plotly")
+```
+
+```{r}
+library(plotly)
+plty<- plot_ly(mi,
+              x=~dates,
+              y=~Daily.Max.8.hour.Ozone.Concentration,
+              color=~COUNTY,
+              type='scatter',
+              mode='lines'
+            )
+plty<-plty%>%rangeslider()%>%layout(title="Maximum Ozone Levels in Michigan Counties, 2020",legend=list(title=list(text='County')),
+                                    xaxis=list(title="Date"),
+                                    yaxis=list(title="Maximum Ozone Reading \n in parts per million"))
+plty<-plty%>%layout(hovermode="x")
+plty
+```
+
+
+
+
+
+
+
+
+
+
+
